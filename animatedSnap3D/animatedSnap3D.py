@@ -134,57 +134,53 @@ def animatedSnapFunc(knobsToAnimate, node=None, vertexSelection=None):
         minVertices = 3
 
     temp = None
-    try:
-        # Verify valid selections before we enter the loop
-        snap3d.verifyNodeToSnap(node, knobsToVerify)
+
+    # Ask for a framerange
+    frames = _get_frange()
+
+    if not frames:
+        # Exit early if cancelled or empty frange
+        return
+
+    # Verify valid selections before we enter the loop
+    snap3d.verifyNodeToSnap(node, knobsToVerify)
+    snap3d.verifyVertexSelection(vertexSelection, minVertices)
+
+    # Add a CurveTool for the forced-evaluation hack
+    temp = nuke.nodes.CurveTool()
+
+    # Set the animated flag on knobs
+    for knob in [node[knob_name] for knob_name in knobsToAnimate]:
+        # Reset animated status
+        if knob.isAnimated():
+            knob.clearAnimated()
+        knob.setAnimated()
+
+    # Set up Progress Task
+    task = nuke.ProgressTask("Snapping")
+    task.setMessage(
+        "Matching position of {node_name} to selected vertices".format(
+            node_name=node.name()
+        )
+    )
+
+    # Loop through the framerange
+    for frame in frames:
+        if task.isCancelled():
+            break
+
+        # Execute the CurveTool node to force evaluation of the tree
+        nuke.execute(temp, frame, frame)
+
+        # The vertex selection needs to be computed per frame
+        # in order to get the vertices at the right context (time)
+        vertexSelection = snap3d.getSelection()
+
+        # Checking vertex selection again in case topology has changed
         snap3d.verifyVertexSelection(vertexSelection, minVertices)
 
-        # Ask for a framerange
-        frames = _get_frange()
+        # Call the passed snap function from the nukescripts.snap3d module
+        snap3d.translateToPointsVerified(node, vertexSelection)
 
-        if not frames:    return    # Exit eary if cancelled or empty framerange
-
-        # Add a CurveTool for the forced-evaluation hack
-        temp = nuke.nodes.CurveTool()
-
-        # Set the anim flag on knobs
-        for knob in [node[x] for x in knobsToAnimate]:
-            # reset animated status
-            if knob.isAnimated():
-                knob.clearAnimated()
-            knob.setAnimated()
-
-        # Set up Progress Task
-        task = nuke.ProgressTask("animatedSnap3D")
-        task.setMessage("Matching position of %s to selected vertices" % node.name())
-
-        # Loop through the framerange
-        for frame in frames:
-            if task.isCancelled():
-                break
-
-            # Execute the CurveTool node to force evaluation of the tree
-            nuke.execute(temp, frame, frame)
-
-            # this is repetitive, but the vertex selection needs to be computed again
-            # in order to get the vertices at the right context (time)
-            vertexSelection = snap3d.getSelection()
-
-            # this is also repetitive. Selection should be already verified
-            # but checking again in case topology has changed between frames
-            snap3d.verifyVertexSelection(vertexSelection, minVertices)
-
-            # Call the passed snap function from the nukescripts.snap3d module
-            snap3d.translateToPointsVerified(node, vertexSelection)
-
-    except ValueError as e:
-        nuke.message(str(e))
-
-    finally:    # delete temp CurveTool node
         if temp:
             nuke.delete(temp)
-
-
-
-
-
