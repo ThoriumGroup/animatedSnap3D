@@ -84,7 +84,7 @@ __all__ = [
 
 
 def run():
-    # Add menu items under the Axis Menu
+    """Add animatedSnap3D menu items under the Axis Menu"""
     axis_menu = nuke.menu('Axis').findItem('Snap')
     axis_menu.addSeparator()
     axis_menu.addCommand(
