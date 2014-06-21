@@ -96,33 +96,32 @@ def translateThisNodeToPointsAnimated(node=None):
     if not node:
         node = nuke.thisNode()
 
-    return animatedSnapFunc(node, s3d.getSelection(), \
-                          ["translate"],\
-                          snapFunc = s3d.translateToPointsVerified)
+    return animatedSnapFunc(["translate"])
 
 def translateRotateThisNodeToPointsAnimated(node=None):
     if not node:
         node = nuke.thisNode()
 
-    return animatedSnapFunc(node, s3d.getSelection(), \
-                          ["translate", "rotate"],\
-                          snapFunc = s3d.translateRotateToPointsVerified)
+    return animatedSnapFunc(["translate", "rotate"])
 
 def translateRotateScaleThisNodeToPointsAnimated(node):
     if not node:
         node = nuke.thisNode()
 
-    return animatedSnapFunc(node, s3d.getSelection(),\
-                          ["translate", "rotate", "scaling"],\
-                          snapFunc = s3d.translateRotateScaleToPointsVerified)
+    return animatedSnapFunc(["translate", "rotate", "scaling"])
 
 
 # Main wrapper function
-def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, snapFunc = s3d.translateToPointsVerified):
-  '''A wrapper to call the relevant snap functions within a framerange loop'''
+def animatedSnapFunc(knobsToAnimate, node=None, vertexSelection=None):
+    """A wrapper to call the relevant snap functions within a framerange loop"""
+
+    minVertices = 1
+    if not node:
+        node = nuke.thisNode()
+    if not vertexSelection:
+        vertexSelection = s3d.getSelection()
 
     knobsToVerify = list(knobsToAnimate)
-    minVertices = 1
     if 'translate' in knobsToVerify:
         knobsToVerify.append('xform_order')
     if 'rotate' in knobsToVerify:
@@ -132,7 +131,7 @@ def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, snapFunc = s3d
 
     temp = None
     try:
-        s3d.verifyNodeToSnap(nodeToSnap, knobsToVerify)
+        s3d.verifyNodeToSnap(node, knobsToVerify)
 
         # verify vertex selection once before the loop
         s3d.verifyVertexSelection(vertexSelection, minVertices)
@@ -146,7 +145,7 @@ def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, snapFunc = s3d
         temp = nuke.nodes.CurveTool()
 
         # Set the anim flag on knobs
-        for knob in [nodeToSnap[x] for x in knobsToAnimate]:
+        for knob in [node[x] for x in knobsToAnimate]:
             # reset animated status
             if knob.isAnimated():
                 knob.clearAnimated()
@@ -154,7 +153,7 @@ def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, snapFunc = s3d
 
         # Set up Progress Task
         task = nuke.ProgressTask("animatedSnap3D")
-        task.setMessage("Matching position of %s to selected vertices" % nodeToSnap.name())
+        task.setMessage("Matching position of %s to selected vertices" % node.name())
 
         # Loop through the framerange
         for frame in frames:
@@ -173,14 +172,15 @@ def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, snapFunc = s3d
             s3d.verifyVertexSelection(vertexSelection, minVertices)
 
             # Call the passed snap function from the nukescripts.snap3d module
-            snapFunc(nodeToSnap, vertexSelection)
+            s3d.translateToPointsVerified(node, vertexSelection)
 
-    except ValueError, e:
+    except ValueError as e:
         nuke.message(str(e))
 
     finally:    # delete temp CurveTool node
         if temp:
             nuke.delete(temp)
+
 
 
 
