@@ -46,7 +46,7 @@ SOFTWARE.
 import nuke
 import nuke.geo
 import nukescripts
-from nukescripts import snap3d as s3d
+from nukescripts import snap3d
 
 # ==============================================================================
 # EXPORTS
@@ -55,11 +55,11 @@ from nukescripts import snap3d as s3d
 __all__ = []
 
 # ==============================================================================
-# PUBLIC FUNCTIONS
+# PRIVATE FUNCTIONS
 # ==============================================================================
 
 
-def get_frange():
+def _get_frange():
     """Open a dialog to request a Nuke-style frame range
 
     Args:
@@ -88,6 +88,10 @@ def get_frange():
         except:  # TODO: Determine exact exception
             nuke.message('Invalid frame range')
             return None
+
+# ==============================================================================
+# PUBLIC FUNCTIONS
+# ==============================================================================
 
 # Lazy functions to determine the vertex selection
 # and call animatedSnapFunc with the right arguments
@@ -119,7 +123,7 @@ def animatedSnapFunc(knobsToAnimate, node=None, vertexSelection=None):
     if not node:
         node = nuke.thisNode()
     if not vertexSelection:
-        vertexSelection = s3d.getSelection()
+        vertexSelection = snap3d.getSelection()
 
     knobsToVerify = list(knobsToAnimate)
     if 'translate' in knobsToVerify:
@@ -131,13 +135,12 @@ def animatedSnapFunc(knobsToAnimate, node=None, vertexSelection=None):
 
     temp = None
     try:
-        s3d.verifyNodeToSnap(node, knobsToVerify)
+        # Verify valid selections before we enter the loop
+        snap3d.verifyNodeToSnap(node, knobsToVerify)
+        snap3d.verifyVertexSelection(vertexSelection, minVertices)
 
-        # verify vertex selection once before the loop
-        s3d.verifyVertexSelection(vertexSelection, minVertices)
-
-        # now ask for a framerange
-        frames = get_frange()
+        # Ask for a framerange
+        frames = _get_frange()
 
         if not frames:    return    # Exit eary if cancelled or empty framerange
 
@@ -165,14 +168,14 @@ def animatedSnapFunc(knobsToAnimate, node=None, vertexSelection=None):
 
             # this is repetitive, but the vertex selection needs to be computed again
             # in order to get the vertices at the right context (time)
-            vertexSelection = s3d.getSelection()
+            vertexSelection = snap3d.getSelection()
 
             # this is also repetitive. Selection should be already verified
             # but checking again in case topology has changed between frames
-            s3d.verifyVertexSelection(vertexSelection, minVertices)
+            snap3d.verifyVertexSelection(vertexSelection, minVertices)
 
             # Call the passed snap function from the nukescripts.snap3d module
-            s3d.translateToPointsVerified(node, vertexSelection)
+            snap3d.translateToPointsVerified(node, vertexSelection)
 
     except ValueError as e:
         nuke.message(str(e))
