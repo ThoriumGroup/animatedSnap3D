@@ -98,8 +98,7 @@ def translateThisNodeToPointsAnimated(node=None):
 
     return animatedSnapFunc(node, s3d.getSelection(), \
                           ["translate"],\
-                          ["translate", "xform_order"],\
-                          minVertices = 1, snapFunc = s3d.translateToPointsVerified)
+                          snapFunc = s3d.translateToPointsVerified)
 
 def translateRotateThisNodeToPointsAnimated(node=None):
     if not node:
@@ -107,8 +106,7 @@ def translateRotateThisNodeToPointsAnimated(node=None):
 
     return animatedSnapFunc(node, s3d.getSelection(), \
                           ["translate", "rotate"],\
-                          ["translate", "rotate", "xform_order", "rot_order"],\
-                          minVertices = 1, snapFunc = s3d.translateRotateToPointsVerified)
+                          snapFunc = s3d.translateRotateToPointsVerified)
 
 def translateRotateScaleThisNodeToPointsAnimated(node):
     if not node:
@@ -116,64 +114,73 @@ def translateRotateScaleThisNodeToPointsAnimated(node):
 
     return animatedSnapFunc(node, s3d.getSelection(),\
                           ["translate", "rotate", "scaling"],\
-                          ["translate", "rotate", "scaling", "xform_order", "rot_order"],\
-                          minVertices = 3, snapFunc = s3d.translateRotateScaleToPointsVerified)
+                          snapFunc = s3d.translateRotateScaleToPointsVerified)
 
 
 # Main wrapper function
-def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, knobsToVerify, minVertices = 1, snapFunc = s3d.translateToPointsVerified):
+def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, snapFunc = s3d.translateToPointsVerified):
   '''A wrapper to call the relevant snap functions within a framerange loop'''
-  temp = None
-  try:
-    s3d.verifyNodeToSnap(nodeToSnap, knobsToVerify)
 
-    # verify vertex selection once before the loop
-    s3d.verifyVertexSelection(vertexSelection, minVertices)
+    knobsToVerify = list(knobsToAnimate)
+    minVertices = 1
+    if 'translate' in knobsToVerify:
+        knobsToVerify.append('xform_order')
+    if 'rotate' in knobsToVerify:
+        knobsToVerify.append("rot_order")
+    if 'scaling' in knobsToVerify:
+        minVertices = 3
 
-    # now ask for a framerange
-    frames = get_frange()
+    temp = None
+    try:
+        s3d.verifyNodeToSnap(nodeToSnap, knobsToVerify)
 
-    if not frames:  return  # Exit eary if cancelled or empty framerange
+        # verify vertex selection once before the loop
+        s3d.verifyVertexSelection(vertexSelection, minVertices)
 
-    # Add a CurveTool for the forced-evaluation hack
-    temp = nuke.nodes.CurveTool()
+        # now ask for a framerange
+        frames = get_frange()
 
-    # Set the anim flag on knobs
-    for knob in [nodeToSnap[x] for x in knobsToAnimate]:
-      # reset animated status
-      if knob.isAnimated():
-        knob.clearAnimated()
-      knob.setAnimated()
+        if not frames:    return    # Exit eary if cancelled or empty framerange
 
-    # Set up Progress Task
-    task = nuke.ProgressTask("animatedSnap3D")
-    task.setMessage("Matching position of %s to selected vertices" % nodeToSnap.name())
+        # Add a CurveTool for the forced-evaluation hack
+        temp = nuke.nodes.CurveTool()
 
-    # Loop through the framerange
-    for frame in frames:
-      if task.isCancelled():
-        break
+        # Set the anim flag on knobs
+        for knob in [nodeToSnap[x] for x in knobsToAnimate]:
+            # reset animated status
+            if knob.isAnimated():
+                knob.clearAnimated()
+            knob.setAnimated()
 
-      # Execute the CurveTool node to force evaluation of the tree
-      nuke.execute(temp, frame, frame)
+        # Set up Progress Task
+        task = nuke.ProgressTask("animatedSnap3D")
+        task.setMessage("Matching position of %s to selected vertices" % nodeToSnap.name())
 
-      # this is repetitive, but the vertex selection needs to be computed again
-      # in order to get the vertices at the right context (time)
-      vertexSelection = s3d.getSelection()
+        # Loop through the framerange
+        for frame in frames:
+            if task.isCancelled():
+                break
 
-      # this is also repetitive. Selection should be already verified
-      # but checking again in case topology has changed between frames
-      s3d.verifyVertexSelection(vertexSelection, minVertices)
+            # Execute the CurveTool node to force evaluation of the tree
+            nuke.execute(temp, frame, frame)
 
-      # Call the passed snap function from the nukescripts.snap3d module
-      snapFunc(nodeToSnap, vertexSelection)
+            # this is repetitive, but the vertex selection needs to be computed again
+            # in order to get the vertices at the right context (time)
+            vertexSelection = s3d.getSelection()
 
-  except ValueError, e:
-    nuke.message(str(e))
+            # this is also repetitive. Selection should be already verified
+            # but checking again in case topology has changed between frames
+            s3d.verifyVertexSelection(vertexSelection, minVertices)
 
-  finally:  # delete temp CurveTool node
-    if temp:
-      nuke.delete(temp)
+            # Call the passed snap function from the nukescripts.snap3d module
+            snapFunc(nodeToSnap, vertexSelection)
+
+    except ValueError, e:
+        nuke.message(str(e))
+
+    finally:    # delete temp CurveTool node
+        if temp:
+            nuke.delete(temp)
 
 
 
