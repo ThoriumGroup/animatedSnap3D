@@ -59,7 +59,7 @@ __all__ = []
 # ==============================================================================
 
 
-def getFrameRange():
+def get_frange():
     """Open a dialog to request a Nuke-style frame range
 
     Args:
@@ -89,34 +89,32 @@ def getFrameRange():
             nuke.message('Invalid frame range')
             return None
 
-# Lazy functions to call on "thisNode"
-
-def translateThisNodeToPointsAnimated():
-  return translateToPointsAnimated(nuke.thisNode())
-
-def translateRotateThisNodeToPointsAnimated():
-  return translateRotateToPointsAnimated(nuke.thisNode())
-
-def translateRotateScaleThisNodeToPointsAnimated():
-  return translateRotateScaleToPointsAnimated(nuke.thisNode())
-
 # Lazy functions to determine the vertex selection
 # and call animatedSnapFunc with the right arguments
 
-def translateToPointsAnimated(nodeToSnap):
-  return animatedSnapFunc(nodeToSnap, s3d.getSelection(), \
+def translateThisNodeToPointsAnimated(node=None):
+    if not node:
+        node = nuke.thisNode()
+
+    return animatedSnapFunc(node, s3d.getSelection(), \
                           ["translate"],\
                           ["translate", "xform_order"],\
                           minVertices = 1, snapFunc = s3d.translateToPointsVerified)
 
-def translateRotateToPointsAnimated(nodeToSnap):
-  return animatedSnapFunc(nodeToSnap, s3d.getSelection(), \
+def translateRotateThisNodeToPointsAnimated(node=None):
+    if not node:
+        node = nuke.thisNode()
+
+    return animatedSnapFunc(node, s3d.getSelection(), \
                           ["translate", "rotate"],\
                           ["translate", "rotate", "xform_order", "rot_order"],\
                           minVertices = 1, snapFunc = s3d.translateRotateToPointsVerified)
 
-def translateRotateScaleToPointsAnimated(nodeToSnap):
-  return animatedSnapFunc(nodeToSnap, s3d.getSelection(),\
+def translateRotateScaleThisNodeToPointsAnimated(node):
+    if not node:
+        node = nuke.thisNode()
+
+    return animatedSnapFunc(node, s3d.getSelection(),\
                           ["translate", "rotate", "scaling"],\
                           ["translate", "rotate", "scaling", "xform_order", "rot_order"],\
                           minVertices = 3, snapFunc = s3d.translateRotateScaleToPointsVerified)
@@ -133,7 +131,7 @@ def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, knobsToVerify,
     s3d.verifyVertexSelection(vertexSelection, minVertices)
 
     # now ask for a framerange
-    frames = getFrameRange()
+    frames = get_frange()
 
     if not frames:  return  # Exit eary if cancelled or empty framerange
 
