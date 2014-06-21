@@ -1,5 +1,16 @@
-import nuke
-import nukescripts.snap3d
+# animatedSnap3D.py
+# An extension to The Foundry's nukescripts.snap3d module
+# to allow snapping to animated geometry
+#
+# Ivan Busquets - 2011
+#
+# Updates:
+# 03/2012  -  Updated for Nuke 6.3, since the name of the original functions in the snap3d module changed from 6.2 to 6.3
+#          -  Cleaned up and grouped animation loop into a single wrapper function
+#
+
+import nuke, nukescripts, nuke.geo
+from nukescripts import snap3d as s3d
 
 def getFrameRange():
   '''Open a dialog to request a Nuke-style frame range
@@ -13,146 +24,102 @@ def getFrameRange():
   r = nuke.getInput('Enter Frame Range:', _range)
 
   try:
-    return nuke.FrameRange(r)
+    if not r:
+      return None
+    else:
+      return nuke.FrameRange(r)
   except:
     nuke.message('Invalid frame range')
-    return
+    return None
 
+# Lazy functions to call on "thisNode"  
 
-def snapAnimated(node):
+def translateThisNodeToPointsAnimated():
+  return translateToPointsAnimated(nuke.thisNode())
   
-  if node is None: 
-    node = nuke.thisNode() 
-    if node is None: 
-      return 
-   
-  if "translate" not in node.knobs() or "rotate" not in node.knobs(): 
-    nuke.message("""Can't snap this node - it doesn't have a "translate" or "rotate" knob.""") 
-    return 
+def translateRotateThisNodeToPointsAnimated():
+  return translateRotateToPointsAnimated(nuke.thisNode())
 
-  points = tuple(nukescripts.snap3d.selectedPoints())
-  if len(points) < 3:
-    nuke.message("You need at least 3 points for this snap function")
-    return
+def translateRotateScaleThisNodeToPointsAnimated():
+  return translateRotateScaleToPointsAnimated(nuke.thisNode())
 
-  frames = getFrameRange()
-  
-  if not frames:  return
-  
-  
-  # Add a CurveTool for the forced-evaluation hack
-  temp = nuke.nodes.CurveTool()
-  
-  for knob in [node['translate'], node['rotate']]:
-    if knob.isAnimated():
-      knob.clearAnimated()
-    knob.setAnimated()
+# Lazy functions to determine the vertex selection
+# and call animatedSnapFunc with the right arguments
 
-  task = nuke.ProgressTask("animatedSnap3D")
-  task.setMessage("Snapping %s to selected vertices" % node.name())
-  
-  # Loop through the framerange
-  for frame in frames:
-    if task.isCancelled():
-      break
+def translateToPointsAnimated(nodeToSnap):
+  return animatedSnapFunc(nodeToSnap, s3d.getSelection(), \
+                          ["translate"],\
+                          ["translate", "xform_order"],\
+                          minVertices = 1, snapFunc = s3d.translateToPointsVerified)
     
-    nuke.execute(temp, frame, frame)
-    nukescripts.snap3d.snapToPoints(node)
-    percent = int(100*(float(frame) / (frames.frames())))
-    task.setProgress(frame)
-   
-  # delete the temp CurveTool node
-  nuke.delete(temp)
+def translateRotateToPointsAnimated(nodeToSnap):
+  return animatedSnapFunc(nodeToSnap, s3d.getSelection(), \
+                          ["translate", "rotate"],\
+                          ["translate", "rotate", "xform_order", "rot_order"],\
+                          minVertices = 1, snapFunc = s3d.translateRotateToPointsVerified)
   
-def scaleAnimated(node):
-  
-  if node is None: 
-    node = nuke.thisNode() 
-    if node is None: 
-      return 
-   
-  if "scaling" not in node.knobs(): 
-    nuke.message("""Can't scale this node - it doesn't have a "scaling" knob.""") 
-    return 
-
-  points = tuple(nukescripts.snap3d.selectedPoints())
-  if len(points) < 2:
-    nuke.message("You need at least 2 points for this snap function")
-    return
-
-  frames = getFrameRange()
-  
-  if not frames:  return
+def translateRotateScaleToPointsAnimated(nodeToSnap):
+  return animatedSnapFunc(nodeToSnap, s3d.getSelection(),\
+                          ["translate", "rotate", "scaling"],\
+                          ["translate", "rotate", "scaling", "xform_order", "rot_order"],\
+                          minVertices = 3, snapFunc = s3d.translateRotateScaleToPointsVerified)
   
   
-  # Add a CurveTool for the forced-evaluation hack
-  temp = nuke.nodes.CurveTool()
-  
-  knob =  node['scaling']
-  if knob.isAnimated():
-    knob.clearAnimated()
-  knob.setAnimated()
-
-  task = nuke.ProgressTask("animatedSnap3D")
-  task.setMessage("Scaling %s to selected vertices" % node.name())
-  
-  # Loop through the framerange
-  for frame in frames:
-    if task.isCancelled():
-      break
+# Main wrapper function
+def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, knobsToVerify, minVertices = 1, snapFunc = s3d.translateToPointsVerified):
+  '''A wrapper to call the relevant snap functions within a framerange loop'''
+  temp = None
+  try:
+    s3d.verifyNodeToSnap(nodeToSnap, knobsToVerify)
     
-    nuke.execute(temp, frame, frame)
-    nukescripts.snap3d.scaleToPoints(node)
-    percent = int(100*(float(frame) / (frames.frames())))
-    task.setProgress(frame)
-   
-  # delete the temp CurveTool node
-  nuke.delete(temp)
-
-
-def translateAnimated(node):
-  
-  if node is None: 
-    node = nuke.thisNode() 
-    if node is None: 
-      return 
-   
-  if "translate" not in node.knobs(): 
-    nuke.message("""Can't translate this node - it doesn't have a "translate" knob.""") 
-    return 
-
-  points = tuple(nukescripts.snap3d.selectedPoints())
-  if not points:
-    nuke.message("Please select one or more vertices.")
-    return
-
-  frames = getFrameRange()
-  
-  if not frames:  return
-  
-   # Add a CurveTool for the forced-evaluation hack
-  temp = nuke.nodes.CurveTool()
-  
-  knob =  node['translate']
-  if knob.isAnimated():
-    knob.clearAnimated()
-  knob.setAnimated()
-
-  task = nuke.ProgressTask("animatedSnap3D")
-  task.setMessage("Translating %s to selected vertices" % node.name())
-  
-  # Loop through the framerange
-  for frame in frames:
-    if task.isCancelled():
-      break
+    # verify vertex selection once before the loop
+    s3d.verifyVertexSelection(vertexSelection, minVertices)
     
-    nuke.execute(temp, frame, frame)
-    nukescripts.snap3d.translateToPoints(node)
-    percent = int(100*(float(frame) / (frames.frames())))
-    task.setProgress(frame)
+    # now ask for a framerange
+    frames = getFrameRange()
    
-  # delete the temp CurveTool node
-  nuke.delete(temp)
+    if not frames:  return  # Exit eary if cancelled or empty framerange
+    
+    # Add a CurveTool for the forced-evaluation hack
+    temp = nuke.nodes.CurveTool()
+    
+    # Set the anim flag on knobs
+    for knob in [nodeToSnap[x] for x in knobsToAnimate]:
+      # reset animated status
+      if knob.isAnimated():
+        knob.clearAnimated()
+      knob.setAnimated()  
+
+    # Set up Progress Task  
+    task = nuke.ProgressTask("animatedSnap3D")
+    task.setMessage("Matching position of %s to selected vertices" % nodeToSnap.name())
+    
+    # Loop through the framerange
+    for frame in frames:    
+      if task.isCancelled():
+        break
+      
+      # Execute the CurveTool node to force evaluation of the tree
+      nuke.execute(temp, frame, frame)
+      
+      # this is repetitive, but the vertex selection needs to be computed again
+      # in order to get the vertices at the right context (time)
+      vertexSelection = s3d.getSelection()
+      
+      # this is also repetitive. Selection should be already verified
+      # but checking again in case topology has changed between frames
+      s3d.verifyVertexSelection(vertexSelection, minVertices)
+      
+      # Call the passed snap function from the nukescripts.snap3d module
+      snapFunc(nodeToSnap, vertexSelection)
+    
+  except ValueError, e:
+    nuke.message(str(e))
+
+  finally:  # delete temp CurveTool node
+    if temp:
+      nuke.delete(temp)
+  
 
 
 

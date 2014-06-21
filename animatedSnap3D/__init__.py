@@ -4,8 +4,8 @@ import nuke
 try:
     m = nuke.menu('Axis').findItem('Snap')
     m.addSeparator()
-    m.addCommand('Snap to (animated)', 'animatedSnap3D.snapAnimated(nuke.thisNode())')
-    m.addCommand('Scale to (animated)', 'animatedSnap3D.scaleAnimated(nuke.thisNode())')
-    m.addCommand('Transform to (animated)', 'animatedSnap3D.translateAnimated(nuke.thisNode())')
+    m.addCommand('Match position - ANIMATED', 'animatedSnap3D.translateThisNodeToPointsAnimated()')
+    m.addCommand('Match position, orientation - ANIMATED', 'animatedSnap3D.translateRotateThisNodeToPointsAnimated()')
+    m.addCommand('Match position, orientation, scale - ANIMATED', 'animatedSnap3D.translateRotateScaleThisNodeToPointsAnimated()')
 except:
     pass
