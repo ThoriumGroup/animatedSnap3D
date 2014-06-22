@@ -79,7 +79,7 @@ __version__ = "1.2"
 __maintainer__ = "Sean Wallitsch"
 __maintainer_email__ = "sean@grenadehop.com"
 __module_name__ = "animatedSnap3D"
-__short_desc = "An extension to Nuke's 'snap' options for animated 3D objects"
+__short_desc__ = "An extension to Nuke's 'snap' options for animated 3D objects"
 __status__ = "Development"
 __url__ = 'http://github.com/ThoriumGroup/animatedSnap3D'
 

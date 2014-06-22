@@ -34,7 +34,7 @@ The following should be placed in your project module's __init__.py file:
     __maintainer__ = "Sean Wallitsch"
     __maintainer_email__ = "sean@grenadehop.com"
     __module_name__ = "animatedSnap3D"
-    __short_desc = "An extension to Nuke's 'snap' options for animated objects"
+    __short_desc__ = "An extension to Nuke's 'snap' options for animated verts"
     __status__ = "Development"
     __url__ = 'http://github.com/ThoriumGroup/animatedSnap3D'
 
