@@ -93,7 +93,27 @@ def _get_frange():
 
 
 def animated_snap(transforms, node=None, vertices=None):
-    """A wrapper to call the relevant snap functions within a framerange loop"""
+    """A wrapper to call the relevant snap functions within a frame range loop
+
+    Args:
+        transform : [str]
+            A list of transforms to apply to the snapped object. Should be
+            one or more of the following:
+                translate, rotate or scaling
+
+        node=None : (<nuke.Node>)
+            The Nuke node to apply the transforms to.
+
+        vertices=None : [<nuke.Vertex>]
+            The vertices to use to get the transformation.
+
+    Returns:
+        None
+
+    Raises:
+        N/A
+
+    """
 
     min_verts = 1
     if not node:
