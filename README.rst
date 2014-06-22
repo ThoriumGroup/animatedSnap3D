@@ -25,10 +25,9 @@ To install, simply ensure the "animatedSnap3D" directory is in your .nuke
 directory or anywhere else within the Nuke python path.
 
 Then, add the following lines to your 'menu.py' file:
-```
-import animatedSnap3D
-animatedSnap3D.run()
-```
+::
+    import animatedSnap3D
+    animatedSnap3D.run()
 
 ## Changelog
 
