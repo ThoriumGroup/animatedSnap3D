@@ -71,13 +71,17 @@ from animatedSnap3D import animated_snap
 # ==============================================================================
 
 __author__ = "Ivan Busquets"
+__author_email__ = "ivanbusquets@gmail.com"
 __copyright__ = "Copyright 2011, Ivan Busquets"
 __credits__ = ["Ivan Busquets", "Sean Wallitsch", ]
 __license__ = "MIT"
 __version__ = "1.2"
 __maintainer__ = "Sean Wallitsch"
-__email__ = "sean@grenadehop.com"
+__maintainer_email__ = "sean@grenadehop.com"
+__module_name__ = "animatedSnap3D"
+__short_desc = "An extension to Nuke's 'snap' options for animated 3D objects"
 __status__ = "Development"
+__url__ = 'http://github.com/ThoriumGroup/animatedSnap3D'
 
 # ==============================================================================
 # EXPORTS
