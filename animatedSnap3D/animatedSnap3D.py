@@ -115,27 +115,26 @@ def translateRotateScaleThisNodeToPointsAnimated(node):
     return animatedSnapFunc(["translate", "rotate", "scaling"])
 
 
-# Main wrapper function
-def animatedSnapFunc(knobsToAnimate, node=None, vertexSelection=None):
+def animated_snap(transforms, node=None, vertices=None):
     """A wrapper to call the relevant snap functions within a framerange loop"""
 
-    minVertices = 1
+    min_verts = 1
     if not node:
         node = nuke.thisNode()
-    if not vertexSelection:
-        vertexSelection = snap3d.getSelection()
+    if not vertices:
+        vertices = snap3d.getSelection()
 
-    knobsToVerify = list(knobsToAnimate)
-    if 'translate' in knobsToVerify:
-        knobsToVerify.append('xform_order')
-    if 'rotate' in knobsToVerify:
-        knobsToVerify.append("rot_order")
-    if 'scaling' in knobsToVerify:
-        minVertices = 3
+    knobs = list(transforms)
+    if 'translate' in knobs:
+        knobs.append('xform_order')
+    if 'rotate' in knobs:
+        knobs.append("rot_order")
+    if 'scaling' in knobs:
+        min_verts = 3
 
     temp = None
 
-    # Ask for a framerange
+    # Ask for a frame range
     frames = _get_frange()
 
     if not frames:
@@ -143,14 +142,14 @@ def animatedSnapFunc(knobsToAnimate, node=None, vertexSelection=None):
         return
 
     # Verify valid selections before we enter the loop
-    snap3d.verifyNodeToSnap(node, knobsToVerify)
-    snap3d.verifyVertexSelection(vertexSelection, minVertices)
+    snap3d.verifyNodeToSnap(node, knobs)
+    snap3d.verifyVertexSelection(vertices, min_verts)
 
     # Add a CurveTool for the forced-evaluation hack
     temp = nuke.nodes.CurveTool()
 
     # Set the animated flag on knobs
-    for knob in [node[knob_name] for knob_name in knobsToAnimate]:
+    for knob in [node[knob_name] for knob_name in transforms]:
         # Reset animated status
         if knob.isAnimated():
             knob.clearAnimated()
@@ -174,13 +173,13 @@ def animatedSnapFunc(knobsToAnimate, node=None, vertexSelection=None):
 
         # The vertex selection needs to be computed per frame
         # in order to get the vertices at the right context (time)
-        vertexSelection = snap3d.getSelection()
+        vertices = snap3d.getSelection()
 
         # Checking vertex selection again in case topology has changed
-        snap3d.verifyVertexSelection(vertexSelection, minVertices)
+        snap3d.verifyVertexSelection(vertices, min_verts)
 
         # Call the passed snap function from the nukescripts.snap3d module
-        snap3d.translateToPointsVerified(node, vertexSelection)
+        snap3d.translateToPointsVerified(node, vertices)
 
         if temp:
             nuke.delete(temp)
