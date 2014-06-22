@@ -44,8 +44,6 @@ SOFTWARE.
 
 # Nuke Imports
 import nuke
-import nuke.geo
-import nukescripts
 from nukescripts import snap3d
 
 # ==============================================================================
@@ -92,27 +90,6 @@ def _get_frange():
 # ==============================================================================
 # PUBLIC FUNCTIONS
 # ==============================================================================
-
-# Lazy functions to determine the vertex selection
-# and call animatedSnapFunc with the right arguments
-
-def translateThisNodeToPointsAnimated(node=None):
-    if not node:
-        node = nuke.thisNode()
-
-    return animatedSnapFunc(["translate"])
-
-def translateRotateThisNodeToPointsAnimated(node=None):
-    if not node:
-        node = nuke.thisNode()
-
-    return animatedSnapFunc(["translate", "rotate"])
-
-def translateRotateScaleThisNodeToPointsAnimated(node):
-    if not node:
-        node = nuke.thisNode()
-
-    return animatedSnapFunc(["translate", "rotate", "scaling"])
 
 
 def animated_snap(transforms, node=None, vertices=None):

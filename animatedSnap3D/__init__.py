@@ -48,11 +48,7 @@ SOFTWARE.
 import nuke
 
 # animatedSnap3D Imports
-from animatedSnap3D import (
-    translateThisNodeToPointsAnimated,
-    translateRotateThisNodeToPointsAnimated,
-    translateRotateScaleThisNodeToPointsAnimated
-)
+from animatedSnap3D import animated_snap
 
 # ==============================================================================
 # GLOBALS
@@ -72,10 +68,8 @@ __status__ = "Development"
 # ==============================================================================
 
 __all__ = [
-    'run'
-    'translateThisNodeToPointsAnimated',
-    'translateRotateThisNodeToPointsAnimated',
-    'translateRotateScaleThisNodeToPointsAnimated'
+    'run',
+    'animated_snap'
 ]
 
 # ==============================================================================
@@ -89,13 +83,13 @@ def run():
     axis_menu.addSeparator()
     axis_menu.addCommand(
         'Match position - Animated',
-        'animatedSnap3D.translateThisNodeToPointsAnimated()'
+        'animatedSnap3D.animated_snap(["translate"])'
     )
     axis_menu.addCommand(
         'Match position, orientation - Animated',
-        'animatedSnap3D.translateRotateThisNodeToPointsAnimated()'
+        'animatedSnap3D.animated_snap(["translate", "rotate"])'
     )
     axis_menu.addCommand(
         'Match position, orientation, scale - Animated',
-        'animatedSnap3D.translateRotateScaleThisNodeToPointsAnimated()'
+        'animatedSnap3D.animated_snap(["translate", "rotate", "scaling"])'
     )
