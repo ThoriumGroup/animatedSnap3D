@@ -1,126 +1,182 @@
-# animatedSnap3D.py
-# An extension to The Foundry's nukescripts.snap3d module
-# to allow snapping to animated geometry
-#
-# Ivan Busquets - 2011
-#
-# Updates:
-# 03/2012  -  Updated for Nuke 6.3, since the name of the original functions in the snap3d module changed from 6.2 to 6.3
-#          -  Cleaned up and grouped animation loop into a single wrapper function
-#
+#!/usr/bin/env python
+"""
 
-import nuke, nukescripts, nuke.geo
-from nukescripts import snap3d as s3d
+Animated Snap 3D
+================
 
-def getFrameRange():
-  '''Open a dialog to request a Nuke-style frame range
-  @return:  a frameRange object if a valid frame range is entered
-                None if frame range is invalid or dialog is cancelled
-  '''
-  firstFrame = int(nuke.numvalue('root.first_frame'))
-  lastFrame = int(nuke.numvalue('root.last_frame'))
-  step = 1
-  _range = str(nuke.FrameRange(firstFrame,lastFrame,step))
-  r = nuke.getInput('Enter Frame Range:', _range)
+This submodule contains the functions needed to executed an animated snap.
 
-  try:
-    if not r:
-      return None
+## Public Functions
+
+    run()
+        Adds the animatedSnap3D functions to the Axis Snap Menu
+
+## License
+
+The MIT License (MIT)
+
+animatedSnap3D
+Copyright (c) 2011 Ivan Busquets
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+"""
+
+# ==============================================================================
+# IMPORTS
+# ==============================================================================
+
+# Nuke Imports
+import nuke
+from nukescripts import snap3d
+
+# ==============================================================================
+# EXPORTS
+# ==============================================================================
+
+__all__ = []
+
+# ==============================================================================
+# PRIVATE FUNCTIONS
+# ==============================================================================
+
+
+def _get_frange():
+    """Open a dialog to request a Nuke-style frame range
+
+    Args:
+        N/A
+
+    Returns:
+        <nuke.FrameRange>
+            Returns a FrameRange object if valid frange is entered, or none.
+
+    Raises:
+        N/A
+
+    """
+
+    first_frame = int(nuke.numvalue('root.first_frame'))
+    last_frame = int(nuke.numvalue('root.last_frame'))
+    step = 1
+    default_frange = str(nuke.FrameRange(first_frame, last_frame, step))
+    frange = nuke.getInput('Enter Frame Range:', default_frange)
+
+    if not frange:
+        return None
     else:
-      return nuke.FrameRange(r)
-  except:
-    nuke.message('Invalid frame range')
-    return None
+        try:
+            return nuke.FrameRange(frange)
+        except:  # TODO: Determine exact exception
+            nuke.message('Invalid frame range')
+            return None
 
-# Lazy functions to call on "thisNode"  
+# ==============================================================================
+# PUBLIC FUNCTIONS
+# ==============================================================================
 
-def translateThisNodeToPointsAnimated():
-  return translateToPointsAnimated(nuke.thisNode())
-  
-def translateRotateThisNodeToPointsAnimated():
-  return translateRotateToPointsAnimated(nuke.thisNode())
 
-def translateRotateScaleThisNodeToPointsAnimated():
-  return translateRotateScaleToPointsAnimated(nuke.thisNode())
+def animated_snap(transforms, node=None, vertices=None):
+    """A wrapper to call the relevant snap functions within a frame range loop
 
-# Lazy functions to determine the vertex selection
-# and call animatedSnapFunc with the right arguments
+    Args:
+        transform : [str]
+            A list of transforms to apply to the snapped object. Should be
+            one or more of the following:
+                translate, rotate or scaling
 
-def translateToPointsAnimated(nodeToSnap):
-  return animatedSnapFunc(nodeToSnap, s3d.getSelection(), \
-                          ["translate"],\
-                          ["translate", "xform_order"],\
-                          minVertices = 1, snapFunc = s3d.translateToPointsVerified)
-    
-def translateRotateToPointsAnimated(nodeToSnap):
-  return animatedSnapFunc(nodeToSnap, s3d.getSelection(), \
-                          ["translate", "rotate"],\
-                          ["translate", "rotate", "xform_order", "rot_order"],\
-                          minVertices = 1, snapFunc = s3d.translateRotateToPointsVerified)
-  
-def translateRotateScaleToPointsAnimated(nodeToSnap):
-  return animatedSnapFunc(nodeToSnap, s3d.getSelection(),\
-                          ["translate", "rotate", "scaling"],\
-                          ["translate", "rotate", "scaling", "xform_order", "rot_order"],\
-                          minVertices = 3, snapFunc = s3d.translateRotateScaleToPointsVerified)
-  
-  
-# Main wrapper function
-def animatedSnapFunc(nodeToSnap, vertexSelection, knobsToAnimate, knobsToVerify, minVertices = 1, snapFunc = s3d.translateToPointsVerified):
-  '''A wrapper to call the relevant snap functions within a framerange loop'''
-  temp = None
-  try:
-    s3d.verifyNodeToSnap(nodeToSnap, knobsToVerify)
-    
-    # verify vertex selection once before the loop
-    s3d.verifyVertexSelection(vertexSelection, minVertices)
-    
-    # now ask for a framerange
-    frames = getFrameRange()
-   
-    if not frames:  return  # Exit eary if cancelled or empty framerange
-    
+        node=None : (<nuke.Node>)
+            The Nuke node to apply the transforms to.
+
+        vertices=None : [<nuke.Vertex>]
+            The vertices to use to get the transformation.
+
+    Returns:
+        None
+
+    Raises:
+        N/A
+
+    """
+
+    min_verts = 1
+    if not node:
+        node = nuke.thisNode()
+    if not vertices:
+        vertices = snap3d.getSelection()
+
+    knobs = list(transforms)
+    if 'translate' in knobs:
+        knobs.append('xform_order')
+    if 'rotate' in knobs:
+        knobs.append("rot_order")
+    if 'scaling' in knobs:
+        min_verts = 3
+
+    temp = None
+
+    # Ask for a frame range
+    frames = _get_frange()
+
+    if not frames:
+        # Exit early if cancelled or empty frange
+        return
+
+    # Verify valid selections before we enter the loop
+    snap3d.verifyNodeToSnap(node, knobs)
+    snap3d.verifyVertexSelection(vertices, min_verts)
+
     # Add a CurveTool for the forced-evaluation hack
     temp = nuke.nodes.CurveTool()
-    
-    # Set the anim flag on knobs
-    for knob in [nodeToSnap[x] for x in knobsToAnimate]:
-      # reset animated status
-      if knob.isAnimated():
-        knob.clearAnimated()
-      knob.setAnimated()  
 
-    # Set up Progress Task  
-    task = nuke.ProgressTask("animatedSnap3D")
-    task.setMessage("Matching position of %s to selected vertices" % nodeToSnap.name())
-    
+    # Set the animated flag on knobs
+    for knob in [node[knob_name] for knob_name in transforms]:
+        # Reset animated status
+        if knob.isAnimated():
+            knob.clearAnimated()
+        knob.setAnimated()
+
+    # Set up Progress Task
+    task = nuke.ProgressTask("Snapping")
+    task.setMessage(
+        "Matching position of {node_name} to selected vertices".format(
+            node_name=node.name()
+        )
+    )
+
     # Loop through the framerange
-    for frame in frames:    
-      if task.isCancelled():
-        break
-      
-      # Execute the CurveTool node to force evaluation of the tree
-      nuke.execute(temp, frame, frame)
-      
-      # this is repetitive, but the vertex selection needs to be computed again
-      # in order to get the vertices at the right context (time)
-      vertexSelection = s3d.getSelection()
-      
-      # this is also repetitive. Selection should be already verified
-      # but checking again in case topology has changed between frames
-      s3d.verifyVertexSelection(vertexSelection, minVertices)
-      
-      # Call the passed snap function from the nukescripts.snap3d module
-      snapFunc(nodeToSnap, vertexSelection)
-    
-  except ValueError, e:
-    nuke.message(str(e))
+    for frame in frames:
+        if task.isCancelled():
+            break
 
-  finally:  # delete temp CurveTool node
-    if temp:
-      nuke.delete(temp)
-  
+        # Execute the CurveTool node to force evaluation of the tree
+        nuke.execute(temp, frame, frame)
 
+        # The vertex selection needs to be computed per frame
+        # in order to get the vertices at the right context (time)
+        vertices = snap3d.getSelection()
 
+        # Checking vertex selection again in case topology has changed
+        snap3d.verifyVertexSelection(vertices, min_verts)
 
-  
+        # Call the passed snap function from the nukescripts.snap3d module
+        snap3d.translateToPointsVerified(node, vertices)
+
+        if temp:
+            nuke.delete(temp)
