@@ -8,6 +8,22 @@ An extension to Nuke's "snap" options for animated 3D objects. Based on a
 selection of vertices, this allows for objects to match the position, rotation
 and scale of that selection over a specified frame range.
 
+## Usage
+
+As the name suggests, this adds "animated" options to the snap_menu in 3d
+nodes since Nuke 6.1. The 3 new options work exactly the same way as their
+original counterparts, but extends their use to animated geometry.
+
+## Installation
+
+To install, simply ensure the 'animatedSnap3D' directory is in your .nuke
+directory or anywhere else within the Nuke python path.
+
+Then, add the following lines to your 'menu.py' file:
+::
+    import animatedSnap3D
+    animatedSnap3D.run()
+
 ## Public Functions
 
     run()
