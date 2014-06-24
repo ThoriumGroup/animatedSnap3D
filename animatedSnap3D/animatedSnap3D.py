@@ -121,7 +121,7 @@ def _frange_percent(frame, frange):
 # ==============================================================================
 
 
-def animated_snap(transforms=None, node=None, vertices=None):
+def animated_snap(transforms=None, node=None, vertices=None, frange=None):
     """A wrapper to call the relevant snap functions within a frame range loop
 
     Args:
@@ -141,6 +141,9 @@ def animated_snap(transforms=None, node=None, vertices=None):
             The vertices to use to get the transformation.
 
             Default: snap3d.getSelection()
+
+        frames=None : (<nuke.FrameRange>)
+            Provide a FrameRange object to suppress dialog.
 
     Returns:
         None
@@ -178,8 +181,9 @@ def animated_snap(transforms=None, node=None, vertices=None):
         nuke.message(err)
         return
 
-    # Ask for a frame range
-    frange = _get_frange()
+    if not frange:
+        # Ask for a frame range
+        frange = _get_frange()
 
     if not frange:
         # Exit early if cancelled or empty frange
