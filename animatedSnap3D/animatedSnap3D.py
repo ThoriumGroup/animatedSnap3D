@@ -90,6 +90,29 @@ def _get_frange():
             nuke.message('Invalid frame range')
             return None
 
+
+def _frange_percent(frame, frange):
+    """Determines what percent completion a task is based on frame and frange
+
+    Args:
+        frame : (int)
+            The frame to determine what percent complete we are.
+
+        frange: (<nuke.FrameRange>)
+            A nuke.FrameRange object with frange information.
+
+    Returns:
+        (int)
+            The percentage of completion.
+
+    Raises:
+        N/A
+
+    """
+    percent = ((frame - frange.first())) / float(frange.framges())
+
+    return int(percent * 100)
+
 # ==============================================================================
 # PUBLIC FUNCTIONS
 # ==============================================================================
@@ -137,9 +160,9 @@ def animated_snap(transforms, node=None, vertices=None):
         snap_func = snap3d.translateRotateScaleToPointsVerified
 
     # Ask for a frame range
-    frames = _get_frange()
+    frange = _get_frange()
 
-    if not frames:
+    if not frange:
         # Exit early if cancelled or empty frange
         return
 
@@ -166,13 +189,11 @@ def animated_snap(transforms, node=None, vertices=None):
     )
 
     # Loop through the framerange
-    for frame in frames:
+    for frame in frange:
         if task.isCancelled():
             break
 
-        progress = int(
-            ((frame - frames.first())) / float(frames.framges())
-        ) * 100
+        progress = _frange_percent(frame, frange)
         task.setProgress(progress)
 
         # Execute the CurveTool node to force evaluation of the tree
