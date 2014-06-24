@@ -105,14 +105,14 @@ def run():
     axis_menu = nuke.menu('Axis').findItem('Snap')
     axis_menu.addSeparator()
     axis_menu.addCommand(
-        'Match position - Animated',
+        'Match animated selection position',
         'animatedSnap3D.animated_snap(["translate"])'
     )
     axis_menu.addCommand(
-        'Match position, orientation - Animated',
+        'Match animated selection position, orientation',
         'animatedSnap3D.animated_snap(["translate", "rotate"])'
     )
     axis_menu.addCommand(
-        'Match position, orientation, scale - Animated',
+        'Match animated selection position, orientation, size',
         'animatedSnap3D.animated_snap(["translate", "rotate", "scaling"])'
     )
