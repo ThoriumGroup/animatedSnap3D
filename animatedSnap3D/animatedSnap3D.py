@@ -136,8 +136,6 @@ def animated_snap(transforms, node=None, vertices=None):
         min_verts = 3
         snap_func = snap3d.translateRotateScaleToPointsVerified
 
-    temp = None
-
     # Ask for a frame range
     frames = _get_frange()
 
