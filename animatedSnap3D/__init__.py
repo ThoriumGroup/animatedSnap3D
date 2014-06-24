@@ -122,7 +122,7 @@ def run():
     axis_menu.addSeparator()
     axis_menu.addCommand(
         'Match animated selection position',
-        'animatedSnap3D.animated_snap(["translate"])'
+        'animatedSnap3D.animated_snap()'
     )
     axis_menu.addCommand(
         'Match animated selection position, orientation',
