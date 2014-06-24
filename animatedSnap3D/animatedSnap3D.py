@@ -168,6 +168,11 @@ def animated_snap(transforms, node=None, vertices=None):
         if task.isCancelled():
             break
 
+        progress = int(
+            ((frame - frames.first())) / float(frames.framges())
+        ) * 100
+        task.setProgress(progress)
+
         # Execute the CurveTool node to force evaluation of the tree
         nuke.execute(temp, frame, frame)
 
@@ -181,5 +186,5 @@ def animated_snap(transforms, node=None, vertices=None):
         # Call the passed snap function from the nukescripts.snap3d module
         snap3d.translateToPointsVerified(node, vertices)
 
-        if temp:
-            nuke.delete(temp)
+    if temp:
+        nuke.delete(temp)
