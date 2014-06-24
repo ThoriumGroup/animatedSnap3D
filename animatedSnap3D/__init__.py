@@ -102,7 +102,23 @@ __all__ = [
 
 def run():
     """Add animatedSnap3D menu items under the Axis Menu"""
-    axis_menu = nuke.menu('Axis').findItem('Snap')
+    try:
+        axis_menu = nuke.menu('Axis').findItem('Snap')
+    except AttributeError:  # Could not find Axis menu
+        nuke.tprint(
+            "Could not find 'Axis' menu to append animatedSnap3D commands. "
+            "animatedSnap3D will not be available through menus."
+        )
+        return
+    else:
+        if not axis_menu:  # Found Axis, could not find Snap
+            nuke.tprint(
+                "Could not find 'Snap' item of sub-menu 'Axis' to append "
+                "animatedSnap3D commands. animatedSnap3D will not be available "
+                "through menus."
+            )
+            return
+
     axis_menu.addSeparator()
     axis_menu.addCommand(
         'Match animated selection position',
