@@ -121,20 +121,26 @@ def _frange_percent(frame, frange):
 # ==============================================================================
 
 
-def animated_snap(transforms, node=None, vertices=None):
+def animated_snap(transforms=None, node=None, vertices=None):
     """A wrapper to call the relevant snap functions within a frame range loop
 
     Args:
-        transform : [str]
+        transforms=None : [str]
             A list of transforms to apply to the snapped object. Should be
             one or more of the following:
                 translate, rotate or scaling
 
+            Default: ['translate']
+
         node=None : (<nuke.Node>)
             The Nuke node to apply the transforms to.
 
+            Default: nuke.thisNode()
+
         vertices=None : [<nuke.Vertex>]
             The vertices to use to get the transformation.
+
+            Default: snap3d.getSelection()
 
     Returns:
         None
@@ -149,12 +155,14 @@ def animated_snap(transforms, node=None, vertices=None):
         node = nuke.thisNode()
     if not vertices:
         vertices = snap3d.getSelection()
+    if not transforms:
+        transforms = ['translate']
 
     snap_func = snap3d.translateToPointsVerified
 
     knobs = list(transforms)
-    if 'translate' in knobs:
-        knobs.append('xform_order')
+    knobs.append('xform_order')
+
     if 'rotate' in knobs:
         knobs.append("rot_order")
         snap_func = snap3d.translateRotateToPointsVerified
@@ -162,16 +170,20 @@ def animated_snap(transforms, node=None, vertices=None):
         min_verts = 3
         snap_func = snap3d.translateRotateScaleToPointsVerified
 
+    # Verify valid selections before we enter the loop
+    try:
+        snap3d.verifyNodeToSnap(node, knobs)
+        snap3d.verifyVertexSelection(vertices, min_verts)
+    except ValueError as err:
+        nuke.message(err)
+        return
+
     # Ask for a frame range
     frange = _get_frange()
 
     if not frange:
         # Exit early if cancelled or empty frange
         return
-
-    # Verify valid selections before we enter the loop
-    snap3d.verifyNodeToSnap(node, knobs)
-    snap3d.verifyVertexSelection(vertices, min_verts)
 
     # Add a CurveTool for the forced-evaluation hack
     temp = nuke.nodes.CurveTool()
@@ -207,10 +219,23 @@ def animated_snap(transforms, node=None, vertices=None):
         vertices = snap3d.getSelection()
 
         # Checking vertex selection again in case topology has changed
-        snap3d.verifyVertexSelection(vertices, min_verts)
-
-        # Call the passed snap function from the nukescripts.snap3d module
-        snap_func(node, vertices)
+        try:
+            snap3d.verifyVertexSelection(vertices, min_verts)
+        except ValueError:
+            nuke.message(
+                "Number of vertices selected has dropped below {verts}."
+                "This is most likely due to changes in geometry topology."
+                "\n"
+                "Please select new vertices and start again from frame "
+                "{frame} on.".format(
+                    verts=min_verts,
+                    frame=frame
+                )
+            )
+            break
+        else:
+            # Call the passed snap function from the nukescripts.snap3d module
+            snap_func(node, vertices)
 
     if temp:
         nuke.delete(temp)
