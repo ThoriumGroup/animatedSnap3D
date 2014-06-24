@@ -8,8 +8,9 @@ This submodule contains the functions needed to executed an animated snap.
 
 ## Public Functions
 
-    run()
-        Adds the animatedSnap3D functions to the Axis Snap Menu
+    anim_snap()
+        A wrapper to call the relevant snap functions within a frame
+        range loop.
 
 ## License
 
@@ -109,7 +110,7 @@ def _frange_percent(frame, frange):
         N/A
 
     """
-    percent = ((frame - frange.first())) / float(frange.framges())
+    percent = (frame - frange.first()) / float(frange.framges())
 
     return int(percent * 100)
 
