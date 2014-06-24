@@ -124,13 +124,17 @@ def animated_snap(transforms, node=None, vertices=None):
     if not vertices:
         vertices = snap3d.getSelection()
 
+    snap_func = snap3d.translateToPointsVerified
+
     knobs = list(transforms)
     if 'translate' in knobs:
         knobs.append('xform_order')
     if 'rotate' in knobs:
         knobs.append("rot_order")
+        snap_func = snap3d.translateRotateToPointsVerified
     if 'scaling' in knobs:
         min_verts = 3
+        snap_func = snap3d.translateRotateScaleToPointsVerified
 
     temp = None
 
@@ -184,7 +188,7 @@ def animated_snap(transforms, node=None, vertices=None):
         snap3d.verifyVertexSelection(vertices, min_verts)
 
         # Call the passed snap function from the nukescripts.snap3d module
-        snap3d.translateToPointsVerified(node, vertices)
+        snap_func(node, vertices)
 
     if temp:
         nuke.delete(temp)
