@@ -8,7 +8,7 @@ This submodule contains the functions needed to executed an animated snap.
 
 ## Public Functions
 
-    anim_snap()
+    animated_snap()
         A wrapper to call the relevant snap functions within a frame
         range loop.
 
@@ -54,7 +54,9 @@ except ImportError:
 # EXPORTS
 # ==============================================================================
 
-__all__ = []
+__all__ = [
+    'animated_snap'
+]
 
 # ==============================================================================
 # PRIVATE FUNCTIONS
