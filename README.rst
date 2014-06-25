@@ -3,7 +3,7 @@ Animated Snap 3D
 
 - **Author:** Ivan Busquets
 - **Maintainer:** Sean Wallitsch
-- **Email:** shidarin@alphamatte.com
+- **Email:** sean@grenadehop.com
 - **License:** MIT
 - **Status:** Development
 - **Python Versions:** 2.6-2.7
@@ -34,7 +34,7 @@ Then, add the following lines to your 'menu.py' file:
 *New in version 1.2:*
 
 - Refactor and code cleanup
-- Will no longer install menu items automatically on import, you need to call 
+- Will no longer install menu items automatically on import, you need to call
     `animatedSnap3D.run()`
 - Removed all convenience and intermediate functions, leaving only
     `animated_snap`
