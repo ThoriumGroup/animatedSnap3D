@@ -44,7 +44,7 @@ Changelog
 
 License
 -------
-::
+
     The MIT License (MIT)
 
     animatedSnap3D
