@@ -114,7 +114,7 @@ def _frange_percent(frame, frange):
         N/A
 
     """
-    percent = (frame - frange.first()) / float(frange.framges())
+    percent = (frame - frange.first()) / float(frange.frames())
 
     return int(percent * 100)
 

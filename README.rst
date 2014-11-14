@@ -39,7 +39,8 @@ Changelog
 - Refactor and code cleanup
 - Will no longer install menu items automatically on import, you need to call `animatedSnap3D.run()`
 - Removed all convenience and intermediate functions, leaving only `animated_snap`
-- `animated_snap` has had it's arguments reworked. The first and only mandatory argument is now `transforms`, which expects a list containing one or more of 'translate', 'rotate' and 'scaling'
+- `animated_snap` has had it's arguments reworked.
+    - The first and only mandatory argument is now `transforms`, which expects a list containing one or more of 'translate', 'rotate' and 'scaling'
     - The two optional args are `node` and `vertices`. If not provided they will be derived automatically.
 
 License
