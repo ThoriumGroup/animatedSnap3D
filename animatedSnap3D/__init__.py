@@ -121,14 +121,14 @@ def install():
 
     axis_menu.addSeparator()
     axis_menu.addCommand(
-        'Match animated selection position',
+        'Geo to animated selection (position)',
         'animatedSnap3D.animated_snap()'
     )
     axis_menu.addCommand(
-        'Match animated selection position, orientation',
+        'Geo to animated selection (position, orientation)',
         'animatedSnap3D.animated_snap(["translate", "rotate"])'
     )
     axis_menu.addCommand(
-        'Match animated selection position, orientation, size',
+        'Geo to animated selection (position, orientation, size)',
         'animatedSnap3D.animated_snap(["translate", "rotate", "scaling"])'
     )
