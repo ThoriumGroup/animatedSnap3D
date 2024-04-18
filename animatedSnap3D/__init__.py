@@ -22,11 +22,11 @@ directory or anywhere else within the Nuke python path.
 Then, add the following lines to your 'menu.py' file:
 ::
     import animatedSnap3D
-    animatedSnap3D.run()
+    animatedSnap3D.install()
 
 ## Public Functions
 
-    run()
+    install()
         Adds the animatedSnap3D functions to the Axis Snap Menu
 
 ## License
