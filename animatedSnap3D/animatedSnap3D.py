@@ -87,8 +87,8 @@ def _get_frange():
     else:
         try:
             return nuke.FrameRange(frange)
-        except:  # TODO: Determine exact exception
-            nuke.message('Invalid frame range')
+        except ValueError:
+            nuke.critical('Invalid frame range')
             return None
 
 # =============================================================================
