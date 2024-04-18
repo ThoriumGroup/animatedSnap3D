@@ -76,7 +76,6 @@ def selectedVertexInfos(selectionThreshold=0.5):
                 for p in range(len(vertexWeights)):
                     value = vertexWeights[p]
                     if value >= selectionThreshold:
-                        print(f"VertexInfo: {o}, {p}, {value}, {points[p]}, {normals[p]}")
                         yield nukescripts.snap3d.VertexInfo(o, p, value, points[p], normals[p])
             break
 
