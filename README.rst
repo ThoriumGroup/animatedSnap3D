@@ -41,6 +41,7 @@ Changelog
 - Renamed `animatedSnap3D.run()` to `animatedSnap3D.install()` to be more representative of what it does.
 - Removed Try/excepts around imports. If the module can't be imported, it would error later on anyway.
 - Added an example menu.py file to the repository.
+- Added a Monkey Patch to fix some of the errors in Nuke 14's snap3d module (optional).
 
 *New in version 1.2:*
 

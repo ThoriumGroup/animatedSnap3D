@@ -66,6 +66,7 @@ import nuke
 
 # animatedSnap3D Imports
 from .animatedSnap3D import animated_snap
+from .monkey_patch import patch_snap3d
 
 # =============================================================================
 # GLOBALS
@@ -91,6 +92,7 @@ __url__ = "http://github.com/ThoriumGroup/animatedSnap3D"
 __all__ = [
     'animated_snap'
     'install',
+    'patch_snap3d'
 ]
 
 # =============================================================================
