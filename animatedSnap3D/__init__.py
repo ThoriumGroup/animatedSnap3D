@@ -61,10 +61,8 @@ SOFTWARE.
 # =============================================================================
 
 # Nuke Imports
-try:
-    import nuke
-except ImportError:
-    pass
+import nuke
+
 
 # animatedSnap3D Imports
 from .animatedSnap3D import animated_snap
@@ -92,7 +90,7 @@ __url__ = "http://github.com/ThoriumGroup/animatedSnap3D"
 
 __all__ = [
     'animated_snap'
-    'run',
+    'install',
 ]
 
 # =============================================================================
@@ -100,7 +98,7 @@ __all__ = [
 # =============================================================================
 
 
-def run():
+def install():
     """Add animatedSnap3D menu items under the Axis Menu"""
     try:
         axis_menu = nuke.menu('Axis').findItem('Snap')

@@ -6,8 +6,8 @@ Animated Snap 3D
 - **Email:** sean@grenadehop.com
 - **License:** MIT
 - **Status:** Development
-- **Python Versions:** 2.6-2.7
-- **Nuke Versions:** 6.3 and up
+- **Python Versions:** 2.6 and up, tested up to 3.10
+- **Nuke Versions:** 6.3 and up, tested up to 15.1
 
 An extension to Nuke's "snap" options for animated 3D objects. Based on a
 selection of vertices, this allows for objects to match the position, rotation
@@ -29,10 +29,18 @@ directory or anywhere else within the Nuke python path.
 Then, add the following lines to your 'menu.py' file:
 ::
     import animatedSnap3D
-    animatedSnap3D.run()
+    animatedSnap3D.install()
+
+Alternatively, you can use the menu.py file included in the repository.
 
 Changelog
 ---------
+
+*Unreleased:*
+
+- Renamed `animatedSnap3D.run()` to `animatedSnap3D.install()` to be more representative of what it does.
+- Removed Try/excepts around imports. If the module can't be imported, it would error later on anyway.
+- Added an example menu.py file to the repository.
 
 *New in version 1.2:*
 
