@@ -22,11 +22,11 @@ directory or anywhere else within the Nuke python path.
 Then, add the following lines to your 'menu.py' file:
 ::
     import animatedSnap3D
-    animatedSnap3D.run()
+    animatedSnap3D.install()
 
 ## Public Functions
 
-    run()
+    install()
         Adds the animatedSnap3D functions to the Axis Snap Menu
 
 ## License
@@ -61,13 +61,12 @@ SOFTWARE.
 # =============================================================================
 
 # Nuke Imports
-try:
-    import nuke
-except ImportError:
-    pass
+import nuke
+
 
 # animatedSnap3D Imports
 from .animatedSnap3D import animated_snap
+from .monkey_patch import patch_snap3d
 
 # =============================================================================
 # GLOBALS
@@ -92,7 +91,8 @@ __url__ = "http://github.com/ThoriumGroup/animatedSnap3D"
 
 __all__ = [
     'animated_snap'
-    'run',
+    'install',
+    'patch_snap3d'
 ]
 
 # =============================================================================
@@ -100,7 +100,7 @@ __all__ = [
 # =============================================================================
 
 
-def run():
+def install():
     """Add animatedSnap3D menu items under the Axis Menu"""
     try:
         axis_menu = nuke.menu('Axis').findItem('Snap')
@@ -121,14 +121,14 @@ def run():
 
     axis_menu.addSeparator()
     axis_menu.addCommand(
-        'Match animated selection position',
+        'Geo to animated selection (position)',
         'animatedSnap3D.animated_snap()'
     )
     axis_menu.addCommand(
-        'Match animated selection position, orientation',
+        'Geo to animated selection (position, orientation)',
         'animatedSnap3D.animated_snap(["translate", "rotate"])'
     )
     axis_menu.addCommand(
-        'Match animated selection position, orientation, size',
+        'Geo to animated selection (position, orientation, size)',
         'animatedSnap3D.animated_snap(["translate", "rotate", "scaling"])'
     )

@@ -4,7 +4,7 @@
 Animated Snap 3D
 ================
 
-This submodule contains the functions needed to executed an animated snap.
+This submodule contains the functions needed to execute an animated snap.
 
 ## Public Functions
 
@@ -44,11 +44,9 @@ SOFTWARE.
 # =============================================================================
 
 # Nuke Imports
-try:
-    import nuke
-    from nukescripts import snap3d
-except ImportError:
-    pass
+import nuke
+from nukescripts import snap3d
+
 
 # =============================================================================
 # EXPORTS
@@ -89,8 +87,8 @@ def _get_frange():
     else:
         try:
             return nuke.FrameRange(frange)
-        except:  # TODO: Determine exact exception
-            nuke.message('Invalid frame range')
+        except ValueError:
+            nuke.critical('Invalid frame range')
             return None
 
 # =============================================================================
@@ -180,7 +178,7 @@ def animated_snap(transforms=None, node=None, vertices=None, frange=None):
         snap3d.verifyNodeToSnap(node, knobs)
         snap3d.verifyVertexSelection(vertices, min_verts)
     except ValueError as err:
-        nuke.message(err)
+        nuke.critical(str(err))
         return
 
     if not frange:
@@ -210,38 +208,39 @@ def animated_snap(transforms=None, node=None, vertices=None, frange=None):
     )
 
     # Loop through the framerange
-    for frame in frange:
-        if task.isCancelled():
-            break
+    try:
+        for frame in frange:
+            if task.isCancelled():
+                break
 
-        progress = _frange_percent(frame, frange)
-        task.setProgress(progress)
+            progress = _frange_percent(frame, frange)
+            task.setProgress(progress)
 
-        # Execute the CurveTool node to force evaluation of the tree
-        nuke.execute(temp, frame, frame)
+            # Execute the CurveTool node to force evaluation of the tree
+            nuke.execute(temp, frame, frame)
 
-        # The vertex selection needs to be computed per frame
-        # in order to get the vertices at the right context (time)
-        vertices = snap3d.getSelection()
+            # The vertex selection needs to be computed per frame
+            # in order to get the vertices at the right context (time)
+            vertices = snap3d.getSelection()
 
-        # Checking vertex selection again in case topology has changed
-        try:
-            snap3d.verifyVertexSelection(vertices, min_verts)
-        except ValueError:
-            nuke.message(
-                "Number of vertices selected has dropped below {verts}."
-                "This is most likely due to changes in geometry topology."
-                "\n"
-                "Please select new vertices and start again from frame "
-                "{frame} on.".format(
-                    verts=min_verts,
-                    frame=frame
+            # Checking vertex selection again in case topology has changed
+            try:
+                snap3d.verifyVertexSelection(vertices, min_verts)
+            except ValueError:
+                nuke.message(
+                    "Number of vertices selected has dropped below {verts}."
+                    "This is most likely due to changes in geometry topology."
+                    "\n"
+                    "Please select new vertices and start again from frame "
+                    "{frame} on.".format(
+                        verts=min_verts,
+                        frame=frame
+                    )
                 )
-            )
-            break
-        else:
-            # Call the passed snap function from the nukescripts.snap3d module
-            snap_func(node, vertices)
-
-    if temp:
-        nuke.delete(temp)
+                break
+            else:
+                # Call the passed snap function from the nukescripts.snap3d module
+                snap_func(node, vertices)
+    finally:
+        if temp:
+            nuke.delete(temp)
